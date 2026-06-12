@@ -5,7 +5,12 @@ import { Card } from './Card';
 import { SessionTag } from './SessionTag';
 import { Text } from './Text';
 
-import { addDays, dateFromYmd, resolveSessionForDate } from '@/data/program';
+import {
+  PROGRAM,
+  addDays,
+  dateFromYmd,
+  resolveSessionForDate,
+} from '@/data/program';
 import { useStore } from '@/store';
 import { useTokens } from '@/theme/ThemeProvider';
 import { fonts } from '@/theme/tokens';
@@ -22,6 +27,13 @@ export function EveningView({ today }: Props) {
   const tomorrowDate = addDays(dateFromYmd(today.date), 1);
   const tomorrow = resolveSessionForDate(dateFromYmd(startDate), tomorrowDate);
   const session = tomorrow.session;
+
+  const nextDeloadStart = findNextDeloadStart(today.weekNumber);
+  const sameBlockWeeks = PROGRAM.weeks.filter((w) => w.block === today.block);
+  const buildWeeksInBlock = sameBlockWeeks.filter((w) => w.type === 'build').length;
+  const currentBuildIdx = sameBlockWeeks
+    .filter((w) => w.type === 'build')
+    .findIndex((w) => w.week === today.weekNumber) + 1;
 
   return (
     <View>
@@ -63,7 +75,7 @@ export function EveningView({ today }: Props) {
         <Text variant="h3" style={{ marginBottom: 10 }}>
           {session.title}
         </Text>
-        {session.type !== 'run' && (
+        {(session.type === 'mobility' || session.type === 'gym') && (
           <View
             style={{
               flexDirection: 'row',
@@ -73,7 +85,7 @@ export function EveningView({ today }: Props) {
             }}
           >
             <Text style={{ fontFamily: fonts.monoMedium, fontSize: 52, color: t.hi, lineHeight: 52 }}>
-              {(session as { durationMinutes: number }).durationMinutes}
+              {session.durationMinutes}
             </Text>
             <Text tone="mid" style={{ fontSize: 17 }}>
               min
@@ -98,18 +110,37 @@ export function EveningView({ today }: Props) {
           </Pressable>
         )}
         {session.type === 'gym' && (
-          <Pressable
-            onPress={() => router.push('/gym?preview=1')}
-            style={[
-              styles.cta,
-              { borderColor: t.sageBorder, backgroundColor: 'transparent' },
-            ]}
-          >
-            <Text style={{ fontFamily: fonts.bodySemi, color: t.sageDeep, fontSize: 14 }}>
-              Preview {session.exercises.length} exercises →
-            </Text>
-          </Pressable>
+          <Text variant="small" tone="sage">
+            {session.exercises.length} exercises · open from Today’s morning view
+          </Text>
         )}
+      </View>
+
+      <View style={{ marginBottom: 26 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'baseline',
+            marginBottom: 10,
+          }}
+        >
+          <Text variant="small" tone="mid">
+            Block {today.block} ·{' '}
+            {today.weekType === 'deload'
+              ? today.weekLabel
+              : `Build week ${currentBuildIdx} of ${buildWeeksInBlock}`}
+          </Text>
+          {nextDeloadStart && (
+            <Text variant="small" tone="sage" style={{ fontFamily: fonts.bodyMedium }}>
+              {nextDeloadStart.label}
+            </Text>
+          )}
+        </View>
+        <ProgressBar weekIndex={today.weekIndex} />
+        <Text variant="small" tone="intent" style={{ marginTop: 12 }}>
+          “{today.weekNote}”
+        </Text>
       </View>
 
       <WeekStrip today={today} />
@@ -134,13 +165,50 @@ function prescribedRir(today: ResolvedSession) {
   return sample?.rir ?? 2;
 }
 
+function findNextDeloadStart(currentWeek: number) {
+  const next = PROGRAM.weeks.find(
+    (w) => w.type === 'deload' && w.week >= currentWeek,
+  );
+  if (!next) return null;
+  if (next.week === currentWeek) return { label: 'Deload week' };
+  const diff = next.week - currentWeek;
+  return { label: diff === 1 ? 'Deload starts next week' : `Deload in ${diff} wks` };
+}
+
+function ProgressBar({ weekIndex }: { weekIndex: number }) {
+  const t = useTokens();
+  return (
+    <View style={{ flexDirection: 'row', gap: 3 }}>
+      {PROGRAM.weeks.map((w, idx) => {
+        const isCurrent = idx === weekIndex;
+        const isPast = idx < weekIndex;
+        const isDeload = w.type === 'deload';
+        let bg = t.line2;
+        if (isCurrent) bg = t.hi;
+        else if (isPast) bg = isDeload ? t.sageSoft : t.done;
+        else if (isDeload) bg = t.sageFaint;
+        return (
+          <View
+            key={w.week}
+            style={{
+              flex: 1,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: bg,
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
 function WeekStrip({ today }: { today: ResolvedSession }) {
   const t = useTokens();
   const start = useStore((s) => s.settings.startDate);
   const startDate = dateFromYmd(start);
   const monday = mondayOf(dateFromYmd(today.date));
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
-  const checkIns = useStore((s) => s.checkIns);
   const gymLogs = useStore((s) => s.gymLogs);
   const mobLogs = useStore((s) => s.mobilityLogs);
   const runLogs = useStore((s) => s.runLogs);
@@ -162,11 +230,12 @@ function WeekStrip({ today }: { today: ResolvedSession }) {
     return { date: key, dayChar: weekdayLetter(d), bg, isToday };
   });
 
-  const planned = days
-    .map((d) => resolveSessionForDate(startDate, d))
-    .filter((r) => r.session.type === 'run');
-  const ranAlready = planned.filter((r) => runLogs[r.date]?.done).length;
-  const weekly = planned.length;
+  const planned = days.map((d) => resolveSessionForDate(startDate, d));
+  const plannedRunDates = planned
+    .filter((r) => r.session.type === 'run')
+    .map((r) => r.date);
+  const ranAlready = plannedRunDates.filter((d) => runLogs[d]?.done).length;
+  const weekly = plannedRunDates.length;
 
   return (
     <Card>

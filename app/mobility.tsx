@@ -2,46 +2,30 @@ import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
-import { dateFromYmd, resolveSessionForDate } from '@/data/program';
+import { PROGRAM, addDays, dayKeyFromDate, ymd } from '@/data/program';
 import type { MobilitySession } from '@/data/types';
 import { useStore } from '@/store';
 import { useTokens } from '@/theme/ThemeProvider';
 import { fonts } from '@/theme/tokens';
 
+const MOBILITY_DAY = PROGRAM.weeklyTemplate.find(
+  (e) => e.sessionId === 'mobility',
+)?.day;
+
 export default function MobilityScreen() {
   const t = useTokens();
-  const startDate = useStore((s) => s.settings.startDate);
-  const today = useMemo(
-    () => resolveSessionForDate(dateFromYmd(startDate), new Date()),
-    [startDate],
-  );
-  const mobLog = useStore((s) => s.mobilityLogs[today.date]);
+  const session = PROGRAM.sessions.mobility as MobilitySession;
+  const targetDate = useMemo(() => upcomingMobilityDate(), []);
+  const dateKey = ymd(targetDate);
+  const today = ymd(new Date());
+  const isLiveSession = dateKey === today;
+
+  const mobLog = useStore((s) => s.mobilityLogs[dateKey]);
   const toggleMobilityDrill = useStore((s) => s.toggleMobilityDrill);
   const completeMobility = useStore((s) => s.completeMobility);
 
-  if (today.session.type !== 'mobility') {
-    return (
-      <Screen>
-        <Pressable onPress={() => router.back()}>
-          <Text tone="low" variant="small">
-            ← Today
-          </Text>
-        </Pressable>
-        <Text variant="h2" style={{ marginTop: 14 }}>
-          No mobility session scheduled today.
-        </Text>
-        <Text variant="small" tone="mid" style={{ marginTop: 6 }}>
-          You can still freely run through the drills below.
-        </Text>
-        {renderDrillsFromProgram(t, today.date, mobLog, toggleMobilityDrill)}
-      </Screen>
-    );
-  }
-
-  const session = today.session as MobilitySession;
   const drills = session.drills;
   const doneCount = drills.filter((d) => mobLog?.drillsDone[d.id]).length;
 
@@ -88,6 +72,11 @@ export default function MobilityScreen() {
         <Text variant="intent" tone="intent">
           {session.intent}
         </Text>
+        {!isLiveSession && (
+          <Text variant="small" tone="low" style={{ marginTop: 8 }}>
+            Preview — checks save for the scheduled day ({dateKey}).
+          </Text>
+        )}
       </View>
 
       {drills.map((drill) => {
@@ -109,7 +98,7 @@ export default function MobilityScreen() {
             }}
           >
             <Pressable
-              onPress={() => toggleMobilityDrill(today.date, drill.id)}
+              onPress={() => toggleMobilityDrill(dateKey, drill.id)}
               style={{
                 width: 40,
                 height: 40,
@@ -166,33 +155,39 @@ export default function MobilityScreen() {
         </Text>
       </View>
 
-      <Pressable
-        onPress={() => {
-          completeMobility(today.date);
-          router.back();
-        }}
-        style={{
-          marginTop: 16,
-          height: 52,
-          borderRadius: 14,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: t.sage,
-        }}
-      >
-        <Text style={{ fontFamily: fonts.bodySemi, color: t.onAccent, fontSize: 15 }}>
-          Mark session complete
-        </Text>
-      </Pressable>
+      {isLiveSession && (
+        <Pressable
+          onPress={() => {
+            completeMobility(dateKey);
+            router.back();
+          }}
+          style={{
+            marginTop: 16,
+            height: 52,
+            borderRadius: 14,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: t.sage,
+          }}
+        >
+          <Text style={{ fontFamily: fonts.bodySemi, color: t.onAccent, fontSize: 15 }}>
+            Mark session complete
+          </Text>
+        </Pressable>
+      )}
     </Screen>
   );
 }
 
-function renderDrillsFromProgram(
-  _t: ReturnType<typeof useTokens>,
-  _date: string,
-  _mobLog: unknown,
-  _toggle: unknown,
-) {
-  return null;
+function upcomingMobilityDate(): Date {
+  const now = new Date();
+  if (!MOBILITY_DAY) return now;
+  const todayKey = dayKeyFromDate(now);
+  if (todayKey === MOBILITY_DAY) return now;
+  for (let i = 1; i <= 7; i++) {
+    const d = addDays(now, i);
+    if (dayKeyFromDate(d) === MOBILITY_DAY) return d;
+  }
+  return now;
 }
+
