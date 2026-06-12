@@ -1,22 +1,69 @@
-import { Text, View } from 'react-native';
+import { useState } from 'react';
+import { View } from 'react-native';
 
+import { EveningView } from '@/components/EveningView';
+import { MorningView } from '@/components/MorningView';
+import { Screen } from '@/components/Screen';
+import { Segmented } from '@/components/Segmented';
+import { Text } from '@/components/Text';
+import { dateFromYmd, resolveSessionForDate } from '@/data/program';
+import { useStore } from '@/store';
 import { useTokens } from '@/theme/ThemeProvider';
 import { fonts } from '@/theme/tokens';
+import { formatLongDate } from '@/util/format';
+import { totalProgramDays } from '@/data/program';
 
-export default function TodayPlaceholder() {
+type Part = 'morning' | 'evening';
+
+export default function TodayScreen() {
   const t = useTokens();
+  const startDate = useStore((s) => s.settings.startDate);
+  const today = resolveSessionForDate(dateFromYmd(startDate), new Date());
+  const [part, setPart] = useState<Part>(() =>
+    new Date().getHours() >= 18 ? 'evening' : 'morning',
+  );
+
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: t.bg,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Text style={{ color: t.hi, letterSpacing: 4, fontFamily: fonts.bodySemi }}>
-        TAIKU
+    <Screen>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+          marginBottom: 24,
+        }}
+      >
+        <Text style={{ fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 4 }}>
+          TAIKU
+        </Text>
+        <Text variant="mono" tone="low">
+          DAY {today.dayOfProgram} / {totalProgramDays()}
+        </Text>
+      </View>
+
+      <Text variant="h2" style={{ marginBottom: 14 }}>
+        {formatLongDate(new Date())}
       </Text>
-    </View>
+
+      <View style={{ marginBottom: 22 }}>
+        <Segmented<Part>
+          items={[
+            { value: 'morning', label: 'Morning' },
+            { value: 'evening', label: 'Evening' },
+          ]}
+          value={part}
+          onChange={setPart}
+        />
+      </View>
+
+      {part === 'morning' ? <MorningView today={today} /> : <EveningView today={today} />}
+
+      <Text variant="small" tone="low" style={{ marginTop: 16, textAlign: 'center' }}>
+        Block {today.block} · {today.weekType === 'deload' ? 'Deload' : 'Build'} ·{' '}
+        {today.weekLabel}
+      </Text>
+      {/* keep the bg padding in scope */}
+      <View style={{ height: 1, backgroundColor: t.bg }} />
+    </Screen>
   );
 }
