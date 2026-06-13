@@ -27,7 +27,7 @@ export function PreStartView({ today, startDate }: Props) {
           Program starts
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-          <Text style={{ fontFamily: fonts.monoMedium, fontSize: 52, color: t.hi, lineHeight: 52 }}>
+          <Text style={{ fontFamily: fonts.monoMedium, fontSize: 52, color: t.hi, lineHeight: 60 }}>
             {days}
           </Text>
           <Text tone="mid" style={{ fontSize: 17 }}>

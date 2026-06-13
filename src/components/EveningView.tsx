@@ -84,7 +84,7 @@ export function EveningView({ today }: Props) {
               marginBottom: 12,
             }}
           >
-            <Text style={{ fontFamily: fonts.monoMedium, fontSize: 52, color: t.hi, lineHeight: 52 }}>
+            <Text style={{ fontFamily: fonts.monoMedium, fontSize: 52, color: t.hi, lineHeight: 60 }}>
               {session.durationMinutes}
             </Text>
             <Text tone="mid" style={{ fontSize: 17 }}>

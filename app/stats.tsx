@@ -70,7 +70,7 @@ export default function StatsScreen() {
           Running
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 16 }}>
-          <Text style={{ fontFamily: fonts.monoMedium, fontSize: 36, color: t.hi }}>
+          <Text style={{ fontFamily: fonts.monoMedium, fontSize: 36, lineHeight: 42, color: t.hi }}>
             {stats.totalRunKm.toFixed(1)}
           </Text>
           <Text tone="low" style={{ fontSize: 14 }}>
@@ -96,7 +96,7 @@ export default function StatsScreen() {
             marginBottom: 16,
           }}
         >
-          <Text style={{ fontFamily: fonts.monoMedium, fontSize: 36, color: t.hi }}>
+          <Text style={{ fontFamily: fonts.monoMedium, fontSize: 36, lineHeight: 42, color: t.hi }}>
             {(stats.totalTonnage / 1000).toFixed(1)}
           </Text>
           <Text tone="low" style={{ fontSize: 14 }}>
@@ -157,6 +157,7 @@ export default function StatsScreen() {
               style={{
                 fontFamily: fonts.monoMedium,
                 fontSize: 36,
+                lineHeight: 42,
                 color: stats.weightDelta <= 0 ? t.sageDeep : t.hi,
               }}
             >
