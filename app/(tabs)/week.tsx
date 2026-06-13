@@ -36,6 +36,23 @@ export default function WeekScreen() {
 
   const today = resolveSessionForDate(dateFromYmd(startDate), new Date());
 
+  if (today.phase === 'before') {
+    return (
+      <Screen>
+        <Text variant="overline" tone="low" style={{ marginBottom: 8 }}>
+          Weekly review
+        </Text>
+        <Text variant="h1" style={{ marginBottom: 6 }}>
+          Nothing to review yet.
+        </Text>
+        <Text variant="small" tone="mid">
+          Once Week 1 has a few logged sessions, the trends, adherence, and lift
+          progressions will show up here.
+        </Text>
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
       <Text variant="overline" tone="low" style={{ marginBottom: 8 }}>

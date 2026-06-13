@@ -114,7 +114,9 @@ export function resolveSessionForDate(
   const start = startOfDay(startDate);
   const day = dayOfProgram(start, d);
   const totalDays = PROGRAM.weeks.length * 7;
-  const isBeyondProgram = day < 1 || day > totalDays;
+  const phase: 'before' | 'during' | 'after' =
+    day < 1 ? 'before' : day > totalDays ? 'after' : 'during';
+  const isBeyondProgram = phase !== 'during';
   const clampedDay = Math.max(1, Math.min(day, totalDays));
   const weekNumber = weekNumberForDay(clampedDay);
   const weekIndex = weekNumber - 1;
@@ -123,6 +125,7 @@ export function resolveSessionForDate(
   const sessionId = sessionIdForDay(dayKey);
   const session = getSession(sessionId);
   const isDeload = week.type === 'deload';
+  const daysUntilStart = phase === 'before' ? 1 - day : 0;
 
   const prescriptions: Record<string, ResolvedPrescription> = {};
   if (session.type === 'gym') {
@@ -135,6 +138,7 @@ export function resolveSessionForDate(
     date: ymd(d),
     dayKey,
     dayOfProgram: day,
+    daysUntilStart,
     weekNumber,
     weekIndex,
     block: week.block,
@@ -146,6 +150,7 @@ export function resolveSessionForDate(
     session,
     prescriptions,
     isBeyondProgram,
+    phase,
   };
 }
 

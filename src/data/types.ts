@@ -111,10 +111,13 @@ export interface ResolvedPrescription {
   load?: string;
 }
 
+export type ProgramPhase = 'before' | 'during' | 'after';
+
 export interface ResolvedSession {
   date: string;
   dayKey: DayKey;
   dayOfProgram: number;
+  daysUntilStart: number;
   weekNumber: number;
   weekIndex: number;
   block: BlockNumber;
@@ -126,4 +129,5 @@ export interface ResolvedSession {
   session: Session;
   prescriptions: Record<string, ResolvedPrescription>;
   isBeyondProgram: boolean;
+  phase: ProgramPhase;
 }

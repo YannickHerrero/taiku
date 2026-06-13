@@ -25,15 +25,19 @@ export default function PlanScreen() {
   const start = dateFromYmd(startDate);
   const today = resolveSessionForDate(start, new Date());
 
+  const isStarted = today.phase !== 'before';
+  const isFinished = today.phase === 'after';
+
   const rows = useMemo(
     () =>
       PROGRAM.weeks.map((w) => {
         const weekStart = addDays(start, (w.week - 1) * 7);
         const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
         const dayResolves = days.map((d) => resolveSessionForDate(start, d));
-        const isCurrent = w.week === today.weekNumber;
-        const isPast = w.week < today.weekNumber;
+        const isCurrent = isStarted && !isFinished && w.week === today.weekNumber;
+        const isPast = isStarted && w.week < today.weekNumber;
         const dotStates = dayResolves.map((r) => {
+          if (!isStarted) return 'planned';
           const isToday = r.date === today.date;
           if (isToday) return 'today';
           const gym = !!gymLogs[r.date]?.completedAt;
@@ -51,7 +55,7 @@ export default function PlanScreen() {
           rangeStart: ymd(weekStart),
         };
       }),
-    [start, today, gymLogs, mobLogs, runLogs],
+    [start, today, gymLogs, mobLogs, runLogs, isStarted, isFinished],
   );
 
   return (
@@ -66,11 +70,16 @@ export default function PlanScreen() {
       >
         <Text variant="h1">90 days</Text>
         <Text variant="mono" tone="low">
-          DAY {today.dayOfProgram} · WK {today.weekNumber}
+          {today.phase === 'before'
+            ? `STARTS IN ${today.daysUntilStart}D`
+            : today.phase === 'after'
+              ? 'COMPLETE'
+              : `DAY ${today.dayOfProgram} · WK ${today.weekNumber}`}
         </Text>
       </View>
       <Text variant="small" tone="low" style={{ marginBottom: 18 }}>
-        13 weeks · 3 blocks · started {formatNumericDate(start)}
+        13 weeks · 3 blocks ·{' '}
+        {today.phase === 'before' ? 'starts' : 'started'} {formatNumericDate(start)}
       </Text>
 
       {rows.map((w) => {
