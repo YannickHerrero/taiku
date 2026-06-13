@@ -14,7 +14,7 @@ import type {
   Settings,
 } from './types';
 
-const DEFAULT_START = ymd(new Date('2026-04-27T00:00:00'));
+const DEFAULT_START = ymd(new Date('2026-06-15T00:00:00'));
 
 interface State {
   hydrated: boolean;
