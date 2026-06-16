@@ -14,7 +14,8 @@ export interface LoggedSet {
 
 export interface LoggedExercise {
   exerciseId: string;
-  upgraded: boolean;
+  variantId: string;
+  warmupSets: LoggedSet[];
   sets: LoggedSet[];
   rpe?: number;
 }

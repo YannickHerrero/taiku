@@ -47,8 +47,19 @@ interface Actions {
     setIndex: number,
     patch: Partial<LoggedSet>,
   ) => void;
+  updateWarmupSet: (
+    date: string,
+    exerciseId: string,
+    setIndex: number,
+    patch: Partial<LoggedSet>,
+  ) => void;
   setExerciseRpe: (date: string, exerciseId: string, rpe: number) => void;
-  toggleExerciseUpgrade: (date: string, exerciseId: string) => void;
+  setExerciseVariant: (
+    date: string,
+    exerciseId: string,
+    variantId: string,
+    seed: { workingSets: LoggedSet[]; warmupSets: LoggedSet[] },
+  ) => void;
   completeGymSession: (date: string) => void;
   startRest: (exerciseId: string, seconds: number) => void;
   stopRest: () => void;
@@ -138,6 +149,30 @@ export const useStore = create<TaikuStore>()(
           };
         }),
 
+      updateWarmupSet: (date, exerciseId, setIndex, patch) =>
+        set((s) => {
+          const log = s.gymLogs[date];
+          if (!log) return s;
+          return {
+            gymLogs: {
+              ...s.gymLogs,
+              [date]: {
+                ...log,
+                exercises: log.exercises.map((ex) =>
+                  ex.exerciseId !== exerciseId
+                    ? ex
+                    : {
+                        ...ex,
+                        warmupSets: ex.warmupSets.map((set_, i) =>
+                          i !== setIndex ? set_ : { ...set_, ...patch },
+                        ),
+                      },
+                ),
+              },
+            },
+          };
+        }),
+
       setExerciseRpe: (date, exerciseId, rpe) =>
         set((s) => {
           const log = s.gymLogs[date];
@@ -157,7 +192,7 @@ export const useStore = create<TaikuStore>()(
           };
         }),
 
-      toggleExerciseUpgrade: (date, exerciseId) =>
+      setExerciseVariant: (date, exerciseId, variantId, seed) =>
         set((s) => {
           const log = s.gymLogs[date];
           if (!log) return s;
@@ -169,7 +204,16 @@ export const useStore = create<TaikuStore>()(
                 exercises: log.exercises.map((ex) =>
                   ex.exerciseId !== exerciseId
                     ? ex
-                    : { ...ex, upgraded: !ex.upgraded },
+                    : {
+                        ...ex,
+                        variantId,
+                        sets: ex.sets.map((existing, i) =>
+                          existing.done ? existing : seed.workingSets[i] ?? existing,
+                        ),
+                        warmupSets: ex.warmupSets.map((existing, i) =>
+                          existing.done ? existing : seed.warmupSets[i] ?? existing,
+                        ),
+                      },
                 ),
               },
             },
