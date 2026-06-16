@@ -68,137 +68,127 @@
     },
     "gym_a": {
       "type": "gym",
-      "title": "Gym A — Full body (squat focus)",
-      "durationMinutes": 60,
+      "title": "Gym A — Squat day",
+      "durationMinutes": 45,
       "warmup": {
         "general": "6 min easy run to the gym",
-        "specific": "2 light ramp sets on the first exercise (~5 min)"
+        "specific": "Per-exercise ramp sets are built in"
       },
       "cooldown": "Easy 6 min run home as a flush",
       "exercises": [
         {
           "id": "squat",
-          "name": "Goblet squat",
-          "upgrade": { "fromBlock": 2, "name": "Barbell back squat", "note": "Optional. Keep goblet heavier if you prefer." },
+          "name": "Squat",
           "blocks": {
-            "1": { "sets": 3, "reps": "8-10", "rir": 3 },
-            "2": { "sets": 3, "reps": "8-10", "rir": 2 },
-            "3": { "sets": 3, "reps": "6-8", "rir": 2 }
+            "1": { "sets": 3, "reps": "8", "rir": 3 },
+            "2": { "sets": 3, "reps": "8", "rir": 2 },
+            "3": { "sets": 3, "reps": "6", "rir": 2 }
           },
           "deload": { "sets": 2, "loadPct": 60 },
-          "note": "Full depth, controlled descent."
+          "note": "Full depth, brace, controlled descent.",
+          "variants": [
+            { "id": "back_squat", "name": "Barbell back squat", "default": true },
+            { "id": "front_squat", "name": "Front squat" },
+            { "id": "goblet_squat", "name": "Goblet squat" }
+          ],
+          "warmup": { "sets": 2, "pcts": [50, 75], "reps": 5 }
         },
         {
-          "id": "horizontal_push",
-          "name": "Dumbbell bench press (or push-ups)",
+          "id": "bench",
+          "name": "Bench press",
           "blocks": {
-            "1": { "sets": 3, "reps": "8-10", "rir": 3 },
-            "2": { "sets": 3, "reps": "8-10", "rir": 2 },
-            "3": { "sets": 3, "reps": "6-8", "rir": 2 }
+            "1": { "sets": 3, "reps": "8", "rir": 3 },
+            "2": { "sets": 3, "reps": "8", "rir": 2 },
+            "3": { "sets": 3, "reps": "6", "rir": 2 }
           },
           "deload": { "sets": 2, "loadPct": 60 },
-          "note": "If push-ups: elevate hands week 1 if needed, progress to floor then deficit."
+          "note": "Tight upper back, elbows ~45°. Touch chest, no bounce.",
+          "variants": [
+            { "id": "barbell_bench", "name": "Barbell bench press", "default": true },
+            { "id": "db_bench", "name": "Dumbbell bench press" },
+            { "id": "pushups", "name": "Push-ups" }
+          ],
+          "warmup": { "sets": 2, "pcts": [50, 75], "reps": 5 }
         },
         {
-          "id": "horizontal_pull",
-          "name": "Seated cable row (or chest-supported row)",
+          "id": "row",
+          "name": "Row",
           "blocks": {
-            "1": { "sets": 3, "reps": "10-12", "rir": 3 },
-            "2": { "sets": 3, "reps": "10-12", "rir": 2 },
-            "3": { "sets": 3, "reps": "8-10", "rir": 2 }
+            "1": { "sets": 3, "reps": "8", "rir": 3 },
+            "2": { "sets": 3, "reps": "8", "rir": 2 },
+            "3": { "sets": 3, "reps": "6", "rir": 2 }
           },
           "deload": { "sets": 2, "loadPct": 60 },
-          "note": "Squeeze shoulder blades, no body swing."
-        },
-        {
-          "id": "calf_raises",
-          "name": "Standing calf raises",
-          "blocks": {
-            "1": { "sets": 3, "reps": "12-15", "rir": 3 },
-            "2": { "sets": 3, "reps": "12-15", "rir": 2 },
-            "3": { "sets": 3, "reps": "10-12", "rir": 2 }
-          },
-          "deload": { "sets": 2, "loadPct": 60 },
-          "note": "Non-negotiable for a runner: Achilles tendon insurance. Slow, full range, pause at the bottom."
-        },
-        {
-          "id": "core_a",
-          "name": "Dead bug (or plank)",
-          "blocks": {
-            "1": { "sets": 2, "reps": "8-10 per side / 30-45 s", "rir": null },
-            "2": { "sets": 3, "reps": "10-12 per side / 45-60 s", "rir": null },
-            "3": { "sets": 3, "reps": "10-12 per side / 60 s", "rir": null }
-          },
-          "deload": { "sets": 2, "loadPct": 100 },
-          "note": "Lower back pressed into the mat. Quality over duration."
+          "note": "Squeeze the shoulder blades back and down. No body swing.",
+          "variants": [
+            { "id": "barbell_row", "name": "Barbell bent-over row", "default": true },
+            { "id": "db_row", "name": "One-arm dumbbell row" },
+            { "id": "chest_supported_row", "name": "Chest-supported row" }
+          ],
+          "warmup": { "sets": 1, "pcts": [60], "reps": 6 }
         }
       ]
     },
     "gym_b": {
       "type": "gym",
-      "title": "Gym B — Full body (hinge focus)",
-      "durationMinutes": 60,
+      "title": "Gym B — Deadlift day",
+      "durationMinutes": 40,
       "warmup": {
         "general": "6 min easy run to the gym",
-        "specific": "2 light ramp sets on the first exercise (~5 min)"
+        "specific": "Per-exercise ramp sets are built in"
       },
       "cooldown": "Easy 6 min run home as a flush",
       "exercises": [
         {
-          "id": "rdl",
-          "name": "Kettlebell Romanian deadlift",
-          "upgrade": { "fromBlock": 2, "name": "Barbell Romanian deadlift", "note": "Switch once the hinge pattern is automatic." },
+          "id": "deadlift",
+          "name": "Deadlift",
           "blocks": {
-            "1": { "sets": 3, "reps": "8-10", "rir": 3 },
-            "2": { "sets": 3, "reps": "8-10", "rir": 2 },
-            "3": { "sets": 3, "reps": "6-8", "rir": 2 }
+            "1": { "sets": 3, "reps": "5", "rir": 3 },
+            "2": { "sets": 3, "reps": "5", "rir": 2 },
+            "3": { "sets": 3, "reps": "3", "rir": 2 }
           },
           "deload": { "sets": 2, "loadPct": 60 },
-          "note": "Hamstrings and glutes: your running engine and injury protection. Soft knees, flat back, push hips back."
+          "note": "Bar over mid-foot. Brace, slack out, push the floor away.",
+          "variants": [
+            { "id": "conventional_deadlift", "name": "Conventional deadlift", "default": true },
+            { "id": "trap_bar_deadlift", "name": "Trap-bar deadlift" },
+            { "id": "romanian_deadlift", "name": "Romanian deadlift" }
+          ],
+          "warmup": { "sets": 2, "pcts": [50, 75], "reps": 5 }
         },
         {
-          "id": "vertical_pull",
-          "name": "Lat pulldown (or assisted pull-up)",
+          "id": "bench",
+          "name": "Bench press",
           "blocks": {
-            "1": { "sets": 3, "reps": "8-10", "rir": 3 },
-            "2": { "sets": 3, "reps": "8-10", "rir": 2 },
-            "3": { "sets": 3, "reps": "6-8", "rir": 2 }
+            "1": { "sets": 3, "reps": "8", "rir": 3 },
+            "2": { "sets": 3, "reps": "8", "rir": 2 },
+            "3": { "sets": 3, "reps": "6", "rir": 2 }
           },
           "deload": { "sets": 2, "loadPct": 60 },
-          "note": "Long-term goal: first strict pull-up."
+          "note": "Tight upper back, elbows ~45°. Touch chest, no bounce.",
+          "variants": [
+            { "id": "barbell_bench", "name": "Barbell bench press", "default": true },
+            { "id": "db_bench", "name": "Dumbbell bench press" },
+            { "id": "pushups", "name": "Push-ups" }
+          ],
+          "warmup": { "sets": 2, "pcts": [50, 75], "reps": 5 }
         },
         {
-          "id": "single_leg",
-          "name": "Bulgarian split squat (or step-ups)",
+          "id": "row",
+          "name": "Row",
           "blocks": {
-            "1": { "sets": 3, "reps": "8 per leg", "rir": 3, "load": "bodyweight" },
-            "2": { "sets": 3, "reps": "8 per leg", "rir": 2, "load": "dumbbells" },
-            "3": { "sets": 3, "reps": "6-8 per leg", "rir": 2, "load": "dumbbells" }
+            "1": { "sets": 3, "reps": "8", "rir": 3 },
+            "2": { "sets": 3, "reps": "8", "rir": 2 },
+            "3": { "sets": 3, "reps": "6", "rir": 2 }
           },
           "deload": { "sets": 2, "loadPct": 60 },
-          "note": "The most running-specific lift in the program. It will be humbling at first — start bodyweight, no ego."
-        },
-        {
-          "id": "vertical_push",
-          "name": "Overhead dumbbell press",
-          "blocks": {
-            "1": { "sets": 3, "reps": "8-10", "rir": 3 },
-            "2": { "sets": 3, "reps": "8-10", "rir": 2 },
-            "3": { "sets": 3, "reps": "6-8", "rir": 2 }
-          },
-          "deload": { "sets": 2, "loadPct": 60 },
-          "note": "Ribs down, no lower-back arch."
-        },
-        {
-          "id": "core_b",
-          "name": "Side plank (or Pallof press)",
-          "blocks": {
-            "1": { "sets": 2, "reps": "30 s per side / 10 per side", "rir": null },
-            "2": { "sets": 3, "reps": "45 s per side / 12 per side", "rir": null },
-            "3": { "sets": 3, "reps": "60 s per side / 12 per side", "rir": null }
-          },
-          "deload": { "sets": 2, "loadPct": 100 },
-          "note": "Lateral core stability transfers directly to single-leg running stance."
+          "note": "Squeeze the shoulder blades back and down. No body swing.",
+          "variants": [
+            { "id": "barbell_row", "name": "Barbell bent-over row", "default": true },
+            { "id": "db_row", "name": "One-arm dumbbell row" },
+            { "id": "chest_supported_row", "name": "Chest-supported row" }
+          ],
+          "warmup": { "sets": 1, "pcts": [60], "reps": 6 }
         }
       ]
     }

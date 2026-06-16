@@ -45,10 +45,16 @@ export interface DeloadOverride {
   loadPct: number;
 }
 
-export interface ExerciseUpgrade {
-  fromBlock: number;
+export interface ExerciseVariant {
+  id: string;
   name: string;
-  note: string;
+  default?: boolean;
+}
+
+export interface ExerciseWarmup {
+  sets: number;
+  pcts: number[];
+  reps: number;
 }
 
 export interface Exercise {
@@ -57,7 +63,8 @@ export interface Exercise {
   note: string;
   blocks: Record<string, BlockPrescription>;
   deload: DeloadOverride;
-  upgrade?: ExerciseUpgrade;
+  variants: ExerciseVariant[];
+  warmup: ExerciseWarmup;
 }
 
 export interface MobilityDrill {
