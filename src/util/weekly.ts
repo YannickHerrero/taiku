@@ -1,4 +1,4 @@
-import { addDays, dateFromYmd, resolveSessionForDate, ymd } from '@/data/program';
+import { PROGRAM, addDays, dateFromYmd, resolveSessionForDate, ymd } from '@/data/program';
 import type { CheckIn, GymLog, MobilityLog, RunLog } from '@/store/types';
 import type { Session } from '@/data/types';
 
@@ -90,30 +90,37 @@ export function buildWeeklySummary({
     .sort((a, b) => (a.date < b.date ? -1 : 1));
   for (const log of lifetimeGym) {
     for (const ex of log.exercises) {
-      const entry = liftMap.get(ex.exerciseId) ?? { name: ex.exerciseId, sets: [] };
+      if (!ex.variantId) continue;
+      const key = `${ex.exerciseId}:${ex.variantId}`;
+      const entry = liftMap.get(key) ?? {
+        name: variantDisplayName(log.sessionId, ex.exerciseId, ex.variantId),
+        sets: [],
+      };
       ex.sets.forEach((s) => {
         if (s.done && s.unit === 'kg' && s.weight > 0) {
           entry.sets.push({ weight: s.weight, reps: s.reps, date: log.date });
         }
       });
-      liftMap.set(ex.exerciseId, entry);
+      liftMap.set(key, entry);
     }
   }
 
-  const lifts = Array.from(liftMap.entries()).map(([id, e]) => {
-    const sorted = e.sets.slice().sort((a, b) => (a.date < b.date ? -1 : 1));
-    const last5 = sorted.slice(-5);
-    const latest = last5[last5.length - 1];
-    const first = sorted[0];
-    return {
-      exerciseId: id,
-      name: prettyExerciseName(id),
-      sets: last5,
-      latest: latest ? { weight: latest.weight, reps: latest.reps } : undefined,
-      deltaFromFirst:
-        latest && first ? Math.round((latest.weight - first.weight) * 10) / 10 : undefined,
-    };
-  });
+  const lifts = Array.from(liftMap.entries())
+    .filter(([, e]) => e.sets.length > 0)
+    .map(([id, e]) => {
+      const sorted = e.sets.slice().sort((a, b) => (a.date < b.date ? -1 : 1));
+      const last5 = sorted.slice(-5);
+      const latest = last5[last5.length - 1];
+      const first = sorted[0];
+      return {
+        exerciseId: id,
+        name: e.name,
+        sets: last5,
+        latest: latest ? { weight: latest.weight, reps: latest.reps } : undefined,
+        deltaFromFirst:
+          latest && first ? Math.round((latest.weight - first.weight) * 10) / 10 : undefined,
+      };
+    });
 
   return {
     weekStart: ymd(start),
@@ -151,21 +158,20 @@ function isDone(
   return !!logs.runLogs[date]?.done;
 }
 
-const PRETTY: Record<string, string> = {
-  squat: 'Goblet squat',
-  rdl: 'KB Romanian DL',
-  horizontal_push: 'DB bench press',
-  horizontal_pull: 'Seated row',
-  vertical_pull: 'Lat pulldown',
-  vertical_push: 'OHP',
-  single_leg: 'BG split squat',
-  calf_raises: 'Calf raises',
-  core_a: 'Dead bug',
-  core_b: 'Side plank',
-};
-
-function prettyExerciseName(id: string) {
-  return PRETTY[id] ?? id;
+function variantDisplayName(
+  sessionId: string,
+  exerciseId: string,
+  variantId: string,
+): string {
+  const session = (PROGRAM.sessions as Record<string, Session>)[sessionId];
+  if (session && session.type === 'gym') {
+    const ex = session.exercises.find((e) => e.id === exerciseId);
+    if (ex) {
+      const variant = ex.variants.find((v) => v.id === variantId);
+      return variant?.name ?? ex.name;
+    }
+  }
+  return variantId;
 }
 
 function insightLine(legs: number[], sleeps: number[]): string {

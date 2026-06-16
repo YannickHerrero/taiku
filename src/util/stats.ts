@@ -33,16 +33,23 @@ export interface AllTimeStats {
   totalDone: number;
 }
 
-const PRETTY: Record<string, string> = {
-  squat: 'Goblet squat',
-  rdl: 'KB Romanian DL',
-  horizontal_push: 'DB bench press',
-  horizontal_pull: 'Seated row',
-  vertical_pull: 'Lat pulldown',
-  vertical_push: 'OHP',
-  single_leg: 'BG split squat',
-  calf_raises: 'Calf raises',
-};
+import type { Session } from '@/data/types';
+
+function variantDisplayName(
+  sessionId: string,
+  exerciseId: string,
+  variantId: string,
+): string {
+  const session = (PROGRAM.sessions as Record<string, Session>)[sessionId];
+  if (session && session.type === 'gym') {
+    const ex = session.exercises.find((e) => e.id === exerciseId);
+    if (ex) {
+      const v = ex.variants.find((vv) => vv.id === variantId);
+      return v?.name ?? ex.name;
+    }
+  }
+  return variantId;
+}
 
 interface BuildParams {
   startDate: string;
@@ -90,35 +97,40 @@ export function buildAllTimeStats({
     }
   }
 
-  const liftMap = new Map<string, Array<{ date: string; weight: number }>>();
+  const liftMap = new Map<
+    string,
+    { name: string; arr: Array<{ date: string; weight: number }> }
+  >();
   for (const log of gymSessions) {
     for (const ex of log.exercises) {
-      const arr = liftMap.get(ex.exerciseId) ?? [];
+      if (!ex.variantId) continue;
+      const key = `${ex.exerciseId}:${ex.variantId}`;
+      const entry = liftMap.get(key) ?? {
+        name: variantDisplayName(log.sessionId, ex.exerciseId, ex.variantId),
+        arr: [],
+      };
       for (const s of ex.sets) {
         if (s.done && s.unit === 'kg') {
-          arr.push({ date: log.date, weight: s.weight });
+          entry.arr.push({ date: log.date, weight: s.weight });
         }
       }
-      liftMap.set(ex.exerciseId, arr);
+      liftMap.set(key, entry);
     }
   }
   const liftProgress = Array.from(liftMap.entries())
-    .map(([id, arr]) => {
-      if (arr.length === 0) {
-        return { exerciseId: id, name: PRETTY[id] ?? id };
-      }
-      const sorted = arr.slice().sort((a, b) => (a.date < b.date ? -1 : 1));
+    .filter(([, e]) => e.arr.length > 0)
+    .map(([id, e]) => {
+      const sorted = e.arr.slice().sort((a, b) => (a.date < b.date ? -1 : 1));
       const first = sorted[0].weight;
       const latest = sorted[sorted.length - 1].weight;
       return {
         exerciseId: id,
-        name: PRETTY[id] ?? id,
+        name: e.name,
         first,
         latest,
         delta: Math.round((latest - first) * 10) / 10,
       };
-    })
-    .filter((l) => l.first != null);
+    });
 
   const checkInList = Object.values(checkIns).sort((a, b) =>
     a.date < b.date ? -1 : 1,
